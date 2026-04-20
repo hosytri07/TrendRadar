@@ -1,0 +1,55 @@
+# =====================================================
+# GitHub Actions Workflow — TrendRadar GTVT
+# Fork từ: github.com/sansan0/TrendRadar
+# Push tin tức GTVT → Telegram Bot @TrishTeam_Feedback_bot
+# =====================================================
+
+name: TrendRadar GTVT — Auto News
+
+on:
+  schedule:
+    # Chạy mỗi 6 tiếng (0h, 6h, 12h, 18h GMT+7 = 17h, 23h, 5h, 11h UTC)
+    - cron: '0 */6 * * *'
+  
+  # Cho phép chạy thủ công từ GitHub Actions tab
+  workflow_dispatch:
+    inputs:
+      debug:
+        description: 'Debug mode'
+        required: false
+        default: 'false'
+
+jobs:
+  run-trendradar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: 📥 Checkout repo
+        uses: actions/checkout@v4
+      
+      - name: 🐍 Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      
+      - name: 📦 Install dependencies
+        run: |
+          pip install -r requirements.txt
+      
+      - name: 📡 Run TrendRadar
+        env:
+          # Telegram credentials (lưu trong GitHub Secrets)
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python main.py --config config/config.yaml
+      
+      - name: 💾 Commit output data
+        run: |
+          git config --global user.name "TrendRadar Bot"
+          git config --global user.email "bot@trishteam.com"
+          git add output/ || true
+          git diff --staged --quiet || git commit -m "chore: update news data $(date +'%Y-%m-%d %H:%M')"
+          git push || true
