@@ -9,7 +9,7 @@ name: TrendRadar GTVT — Auto News
 on:
   schedule:
     # Chạy mỗi 6 tiếng (0h, 6h, 12h, 18h GMT+7 = 17h, 23h, 5h, 11h UTC)
-    - cron: '0 */6 * * *'
+    - cron: '0 */0.5 * * *'
   
   # Cho phép chạy thủ công từ GitHub Actions tab
   workflow_dispatch:
